@@ -1,25 +1,53 @@
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import { useEffect } from "react";
+import { useState } from "react";
+import axios from "axios";
+import Countries from "./components/Countries";
 
-function App() {
+const App = () => {
+  const [countries, setCountries] = useState([]);
+  const [newFilter, setNewFilter] = useState("");
+  const [weather, setWeather] = useState([]);
+  const [capitalCity, setCapitalCity] = useState("Helsinki");
+  const api_key = process.env.REACT_APP_API_KEY;
+
+  useEffect(() => {
+    axios
+      .get(
+        `http://api.weatherstack.com/current?access_key=${api_key}&query=${capitalCity}`
+      )
+      .then((response) => {
+        console.log(response.data);
+        setWeather(response.data);
+      });
+  }, [capitalCity]);
+
+  useEffect(() => {
+    axios.get("https://restcountries.eu/rest/v2/all").then((response) => {
+      setCountries(response.data);
+    });
+  }, []);
+
+  const handleFilterChange = (event) => {
+    setNewFilter(event.target.value);
+  };
+  const handleCountryChange = (capital) => setCapitalCity(capital);
+  const countriesToShow = countries.filter((person) =>
+    person.name.toLowerCase().includes(newFilter.toLowerCase())
+  );
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <input value={newFilter} onChange={handleFilterChange} />
+      <Countries
+        countries={countriesToShow}
+        newFilter={newFilter}
+        setNewFilter={setNewFilter}
+        weather={weather}
+        handleCountryChange={handleCountryChange}
+      />
     </div>
   );
-}
+};
 
 export default App;
